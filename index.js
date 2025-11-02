@@ -95,7 +95,8 @@ class PDFDocumentWithTables extends PDFDocument {
     
         const title            = table.title    ? table.title    : ( options.title    || '' ) ;
         const subtitle         = table.subtitle ? table.subtitle : ( options.subtitle || '' ) ;
-
+        const border           = options.border || null;
+        const borderWidth           = options.borderWidth || 1;
         this.logg('layout', this.page.layout);
         this.logg('size', this.page.size);
         this.logg('margins', this.page.margins);
@@ -901,7 +902,18 @@ class PDFDocumentWithTables extends PDFDocument {
         // update position
         this.x = startX;
         this.y = rowBottomY; // position y final;
-        this.moveDown(); // break
+        if (border) {
+          const rowHeights = table.rows.map(r => r._height || this.headerHeight);
+          const tableHeight = this.headerHeight + rowHeights.reduce((sum, h) => sum + h, 0);
+          const topBorder = options.y || this.y || this.page.margins.top;
+          const m = options.x || this.page.margins.left || 30;
+          this
+          .stroke(border)
+          .lineWidth(borderWidth)
+          .rect(startX, topBorder - columnSpacing - (rowDistance * 2), tableWidth - m, tableHeight + (columnSpacing * (table.rows.length + 1)))
+          .stroke()
+        }
+        this.moveDown();
     
         // add fire
         this.off("pageAdded", onFirePageAdded);
