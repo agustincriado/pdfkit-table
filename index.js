@@ -844,7 +844,7 @@ class PDFDocumentWithTables extends PDFDocument {
             prepareRowBackground(table.headers[index], rectCell);
     
             // Allow the user to override style for rows
-            prepareRow(row, index, i, rectRow, rectCell);
+            const override = prepareRow(row, index, i, rectRow, rectCell);
     
             if(typeof table.headers[index] === 'object') {
               // renderer column
@@ -870,13 +870,14 @@ class PDFDocumentWithTables extends PDFDocument {
               topTextToAlignVertically = rowDistance - columnSpacing + (rectCell.height - heightText) / 2;  
             }
             // ------------------------------------------------------------------------------
-    
-            this.text(cell, 
-              lastPositionX + (cellPadding.left),
-              startY + topTextToAlignVertically, {
-              width: columnSizes[index] - (cellPadding.left + cellPadding.right),
-              align: align,
-            });
+            if (!override) {
+              this.text(cell, 
+                lastPositionX + (cellPadding.left),
+                startY + topTextToAlignVertically, {
+                width: columnSizes[index] - (cellPadding.left + cellPadding.right),
+                align: align,
+              });
+            }
     
             lastPositionX += columnSizes[index];
     
