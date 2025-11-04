@@ -903,14 +903,21 @@ class PDFDocumentWithTables extends PDFDocument {
         this.x = startX;
         this.y = rowBottomY; // position y final;
         if (border) {
-          const rowHeights = table.rows.map(r => r._height || this.headerHeight);
+          const minHeight = options.minRowHeight || 0
+          const rowHeights = table.rows.map(r => {
+            const h = r._height || this.headerHeight
+            return h < minHeight ? minHeight : h
+          })
           const tableHeight = this.headerHeight + rowHeights.reduce((sum, h) => sum + h, 0);
           const topBorder = options.y || this.y || this.page.margins.top;
-          const m = options.x || this.page.margins.left || 30;
+          const m = options.x || this.page.margins.left || 30; 
           this
           .stroke(border)
           .lineWidth(borderWidth)
-          .rect(startX, topBorder - columnSpacing - (rowDistance * 2), tableWidth - m, tableHeight + (columnSpacing * (table.rows.length + 1)))
+          .rect(startX,
+            topBorder - columnSpacing - (rowDistance * 2),
+            tableWidth - m,
+            tableHeight + 4 + (columnSpacing * (table.rows.length + 1)))
           .stroke()
         }
         this.moveDown();
