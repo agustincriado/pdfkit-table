@@ -219,7 +219,6 @@ class PDFDocumentWithTables extends PDFDocument {
         }
         
         const separationsRow = (type, x, y, width, opacity, color) => {
-
           type || (type = 'horizontal'); // header | horizontal | vertical 
 
           // distance
@@ -903,12 +902,7 @@ class PDFDocumentWithTables extends PDFDocument {
         this.x = startX;
         this.y = rowBottomY; // position y final;
         if (border) {
-          const minHeight = options.minRowHeight || 0
-          const rowHeights = table.rows.map(r => {
-            const h = r._height || this.headerHeight
-            return h < minHeight ? minHeight : h
-          })
-          const tableHeight = this.headerHeight + rowHeights.reduce((sum, h) => sum + h, 0);
+          const tableHeight = computeRowHeight(table.headers, true) + computeRowHeight(table.rows, false)
           const topBorder = options.y || this.y || this.page.margins.top;
           const m = options.x || this.page.margins.left || 30; 
           this
@@ -917,7 +911,8 @@ class PDFDocumentWithTables extends PDFDocument {
           .rect(startX,
             topBorder - columnSpacing - (rowDistance * 2),
             tableWidth - m,
-            tableHeight + 4 + (columnSpacing * (table.rows.length + 1)))
+            tableHeight + (columnSpacing * (table.rows.length + 1))
+          )
           .stroke()
         }
         this.moveDown();
