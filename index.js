@@ -126,7 +126,7 @@ class PDFDocumentWithTables extends PDFDocument {
 
           //------------ experimental fast variables
           let titleHeight     = 0;
-          this.headerHeight    = 0;
+          
           let firstLineHeight = 0;
           this.datasIndex     = 0;
           this.rowsIndex     = 0 ;
@@ -447,16 +447,16 @@ class PDFDocumentWithTables extends PDFDocument {
         calcColumnSizes();
     
         // Header
-    
+        let headerHeight    = computeRowHeight(table.headers, true);
         const addHeader = () => { 
    
           // Allow the user to override style for headers
           prepareHeader();
     
           // calc header height
-          if(this.headerHeight === 0){
-            this.headerHeight = computeRowHeight(table.headers, true);
-            this.logg(this.headerHeight, 'headers');
+          if(headerHeight === 0){
+            headerHeight = computeRowHeight(table.headers, true);
+            this.logg(headerHeight, 'headers');
           }
 
           // calc first table line when init table
@@ -474,7 +474,7 @@ class PDFDocumentWithTables extends PDFDocument {
           // 24.1 is height calc title + subtitle
           titleHeight = !lockAddTitles ? 24.1 : 0; 
           // calc if header + first line fit on last page
-          const calc = startY + titleHeight + firstLineHeight + this.headerHeight + safelyMarginBottom// * 1.3;
+          const calc = startY + titleHeight + firstLineHeight + headerHeight + safelyMarginBottom// * 1.3;
 
           // content is big text (crazy!)
           if(firstLineHeight > maxY) {
@@ -542,7 +542,7 @@ class PDFDocumentWithTables extends PDFDocument {
                   x: lastPositionX, 
                   y: startY - columnSpacing - (rowDistance * 2), 
                   width: columnSizes[i], 
-                  height: this.headerHeight + columnSpacing,
+                  height: headerHeight + columnSpacing,
                 };
     
                 // add background
@@ -567,7 +567,7 @@ class PDFDocumentWithTables extends PDFDocument {
     
               // Print all headers
               table.headers.forEach( (dataHeader, i) => {
-    
+                
                 let {label, width, renderer, align, headerColor, headerOpacity, headerAlign, padding} = dataHeader;
                 // check defination
                 width = width || columnSizes[i];
@@ -603,7 +603,7 @@ class PDFDocumentWithTables extends PDFDocument {
                   x: lastPositionX, 
                   y: startY - columnSpacing - (rowDistance * 2), 
                   width: width, 
-                  height: this.headerHeight + columnSpacing,
+                  height: headerHeight + columnSpacing,
                 };
 
                 // add background
