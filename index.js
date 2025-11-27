@@ -116,11 +116,11 @@ class PDFDocumentWithTables extends PDFDocument {
         //const prepareCell      = options.prepareCell || ((cell, indexColumn, indexRow, indexCell, rectCell) => this.fillColor('black').font("Helvetica").fontSize(8).fill());
         
           let tableWidth       = 0;
-        const maxY             = this.page.height - (this.page.margins.bottom); // this.page.margins.top + 
+        const maxY             = options.maxY || this.page.height - (this.page.margins.bottom); // this.page.margins.top + 
     
           let startX           = options.x || this.x || this.page.margins.left;
           let startY           = options.y || this.y || this.page.margins.top;
-
+          let initialY         = options.initialY || this.initialY
           let lastPositionX    = 0; 
           let rowBottomY       = 0;
 
@@ -189,7 +189,7 @@ class PDFDocumentWithTables extends PDFDocument {
         // event emitter
         const onFirePageAdded = () => {
           // startX = this.page.margins.left;
-          startY = this.page.margins.top;
+          startY = initialY || this.page.margins.top;
           rowBottomY = 0;
           // lockAddPage || this.addPage(this.options);
           lockAddPage || this.addPage({
@@ -924,7 +924,7 @@ class PDFDocumentWithTables extends PDFDocument {
         typeof callback === 'function' && callback(this);
         
         // nice :)
-        resolve();
+        resolve(true);
         
       } catch (error) {
 
@@ -966,7 +966,7 @@ class PDFDocumentWithTables extends PDFDocument {
         // // callback
         typeof callback === 'function' && callback(this);
         // // donw!
-        resolve();
+        resolve(true);
       } 
       catch(error)
       {
