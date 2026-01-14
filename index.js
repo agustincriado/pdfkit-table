@@ -902,7 +902,9 @@ class PDFDocumentWithTables extends PDFDocument {
         this.x = startX;
         this.y = rowBottomY; // position y final;
         if (border) {
-          const tableHeight = computeRowHeight(table.headers, true) + computeRowHeight(table.rows, false)
+          const tableBottomY = rowBottomY;
+          const tableTopY = (options.y || this.page.margins.top) - rowDistance;
+          const tableHeight = tableBottomY - tableTopY;
           const topBorder = options.y || this.y || this.page.margins.top;
           const m = options.x || this.page.margins.left || 30; 
           this
