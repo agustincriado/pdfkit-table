@@ -95,8 +95,7 @@ class PDFDocumentWithTables extends PDFDocument {
     
         const title            = table.title    ? table.title    : ( options.title    || '' ) ;
         const subtitle         = table.subtitle ? table.subtitle : ( options.subtitle || '' ) ;
-        const border           = options.border || null;
-        const borderWidth           = options.borderWidth || 1;
+        const border           = options.border || { top: null, right: null, bottom: null, left: null };
         this.logg('layout', this.page.layout);
         this.logg('size', this.page.size);
         this.logg('margins', this.page.margins);
@@ -214,9 +213,22 @@ class PDFDocumentWithTables extends PDFDocument {
           let f = null; eval('f = ' + str); return f;
         };
    
-        const separationsColumn = () => {
-         // soon 
-        }
+        const separationsColumn = (x, topY, bottomY, width, opacity, color) => {
+          if (options.divider.vertical?.disabled) return;
+
+          width   = width   || options.divider.vertical.width   || 0.5;
+          opacity = opacity || options.divider.vertical.opacity || 0.5;
+          color   = color   || options.divider.vertical.color   || 'black';
+
+          this
+            .moveTo(x, topY)
+            .lineTo(x, bottomY)
+            .lineWidth(width)
+            .strokeColor(color)
+            .opacity(opacity)
+            .stroke()
+            .opacity(1);
+        };
         
         const separationsRow = (type, x, y, width, opacity, color) => {
           type || (type = 'horizontal'); // header | horizontal | vertical 
@@ -901,24 +913,45 @@ class PDFDocumentWithTables extends PDFDocument {
         // update position
         this.x = startX;
         this.y = rowBottomY; // position y final;
-        if (border) {
+        if (border && Object.values(border).some(v => v)) {
+          const tableTopY = (options.y || this.page.margins.top) - columnSpacing - (rowDistance * 2);
           const tableBottomY = rowBottomY;
-          const tableTopY = (options.y || this.page.margins.top) - rowDistance;
-          const tableHeight = tableBottomY - tableTopY;
-          const topBorder = options.y || this.y || this.page.margins.top;
-          const m = options.x || this.page.margins.left || 30; 
-          this
-          .stroke(border)
-          .lineWidth(borderWidth)
-          .rect(startX,
-            topBorder - columnSpacing - (rowDistance * 2),
-            tableWidth - m,
-            tableHeight + (columnSpacing * (table.rows.length + 1))
-          )
-          .stroke()
+          const tableLeftX = startX;
+          const tableRightX = startX + tableWidth - (options.x || this.page.margins.left || 0);
+
+          const drawSide = (side, x1, y1, x2, y2) => {
+            if (!border[side]) return;
+            const { width = 0.5, color = 'black', opacity = 1 } = border[side];
+            this.moveTo(x1, y1).lineTo(x2, y2).lineWidth(width).strokeColor(color).opacity(opacity).stroke().opacity(1);
+          };
+
+          drawSide('top', tableLeftX, tableTopY, tableRightX, tableTopY);
+          drawSide('bottom', tableLeftX, tableBottomY, tableRightX, tableBottomY);
+          drawSide('left', tableLeftX, tableTopY, tableLeftX, tableBottomY);
+          drawSide('right', tableRightX, tableTopY, tableRightX, tableBottomY);
         }
         this.moveDown();
-    
+        if (!options.divider.vertical?.disabled) {
+          const m = options.x || this.page.margins.left || 30;
+
+          const tableTopY =
+            (options.y || this.page.margins.top) -
+            columnSpacing -
+            (rowDistance * 2);
+
+          const tableBottomY = rowBottomY;
+
+          // Left border
+          separationsColumn(startX, tableTopY, tableBottomY);
+
+          // Column separators
+          columnPositions.slice(1).forEach(x => {
+            separationsColumn(x, tableTopY, tableBottomY);
+          });
+
+          // Right border
+          separationsColumn(startX + tableWidth - m, tableTopY, tableBottomY);
+        }
         // add fire
         this.off("pageAdded", onFirePageAdded);
     
@@ -954,7 +987,7 @@ class PDFDocumentWithTables extends PDFDocument {
         }
 
         const len = tables.length;
-        for(let i; i < len; i++)
+        for(let i = 0; i < len; i++)
         {
           await this.table(tables[i], tables[i].options || {});
         }
