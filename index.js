@@ -76,6 +76,7 @@ class PDFDocumentWithTables extends PDFDocument {
         table.options && (options = {...options, ...table.options});
 
         options.hideHeader || (options.hideHeader = false);
+        options.switchPage || (options.switchPage = false);
         options.padding || (options.padding = 0);
         options.columnsSize || (options.columnsSize = []);
         options.addPage || (options.addPage = false);
@@ -819,7 +820,14 @@ class PDFDocumentWithTables extends PDFDocument {
           // For safety, consider 3 rows margin instead of just one
           // if (startY + 3 * rowHeight < maxY) startY = rowBottomY + columnSpacing + rowDistance; // 0.5 is spacing rows
           // else this.emitter.emit('addPage'); //this.addPage(); 
-          if(options.useSafelyMarginBottom && this.y + safelyMarginBottom + rowHeight >= maxY && !lockAddPage) onFirePageAdded(); // this.emitter.emit('addPage'); //this.addPage(); 
+          if(options.useSafelyMarginBottom && this.y + safelyMarginBottom + rowHeight >= maxY && !lockAddPage) {
+            if (options.switchPage) {
+              this.switchToPage(options.switchPage)
+              addHeader()
+            } else {
+              onFirePageAdded(4)
+            }
+          }; // this.emitter.emit('addPage'); //this.addPage(); 
           
           // calc position
           startY = rowBottomY + columnSpacing + rowDistance; // 0.5 is spacing rows
