@@ -563,6 +563,11 @@ class PDFDocumentWithTables extends PDFDocument {
     
                 // cell padding
                 cellPadding = prepareCellPadding(options.padding || 0);
+                if (header.color) {
+                  this.fillColor(header.color)
+                } else {
+                  this.fillColor('black')
+                }
     
                 // write
                 this.text(header, 
@@ -624,6 +629,11 @@ class PDFDocumentWithTables extends PDFDocument {
     
                 // cell padding
                 cellPadding = prepareCellPadding(padding || options.padding || 0);
+                if (dataHeader.color) {
+                  this.fillColor(dataHeader.color)
+                } else {
+                  this.fillColor('black')
+                }
     
                 // write
                 this.text(label, 
